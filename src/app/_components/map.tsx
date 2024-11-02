@@ -1,104 +1,58 @@
 "use client";
-import { useRef, useEffect } from "react";
-import mapboxgl from "mapbox-gl";
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+import {
+  MapContainer,
+  Marker,
+  TileLayer,
+  Tooltip,
+  Polygon,
+} from "react-leaflet";
 
-export function MapboxMap() {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<null | mapboxgl.Map>(null);
+import "leaflet-defaulticon-compatibility";
 
-  useEffect(() => {
-    if (!MAPBOX_TOKEN) throw new Error("MAPBOX_TOKEN is not set.");
-    if (mapRef.current || !mapContainerRef.current) return;
+interface Props {
+  position?: [number, number];
+  zoom?: number;
+}
+export default function MyMap(props: Props) {
+  const { position = [47.751076, -120.740135], zoom = 9 } = props;
 
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-    mapRef.current = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/light-v11",
-      center: [-74.5, 40], // New York area
-      zoom: 9,
-    });
-
-    mapRef.current.on("load", () => {
-      // Add a data source containing GeoJSON data
-      mapRef.current?.addSource("polygons", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [
-            {
-              type: "Feature",
-              geometry: {
-                type: "Polygon",
-                coordinates: [
-                  [
-                    [-74.5, 40],
-                    [-74.3, 40],
-                    [-74.3, 40.2],
-                    [-74.5, 40.2],
-                    [-74.5, 40],
-                  ],
-                ],
-              },
-              properties: {
-                name: "Sample Polygon 1",
-              },
-            },
-            {
-              type: "Feature",
-              geometry: {
-                type: "Polygon",
-                coordinates: [
-                  [
-                    [-74.7, 40.1],
-                    [-74.5, 40.1],
-                    [-74.5, 40.3],
-                    [-74.7, 40.3],
-                    [-74.7, 40.1],
-                  ],
-                ],
-              },
-              properties: {
-                name: "Sample Polygon 2",
-              },
-            },
-          ],
-        },
-      });
-
-      // Add a layer showing the polygons
-      mapRef.current?.addLayer({
-        id: "polygon-layer",
-        type: "fill",
-        source: "polygons",
-        paint: {
-          "fill-color": "#0080ff",
-          "fill-opacity": 0.5,
-          "fill-outline-color": "#000000",
-        },
-      });
-
-      // Add hover effect
-      mapRef.current?.addLayer({
-        id: "polygon-outline",
-        type: "line",
-        source: "polygons",
-        paint: {
-          "line-color": "#000",
-          "line-width": 2,
-        },
-      });
-    });
-
-    // Cleanup on unmount
-    return () => mapRef.current?.remove();
-  }, []);
   return (
-    <div>
-      <h2>{MAPBOX_TOKEN}</h2>
+    <div style={{ height: "720px", width: "900px" }}>
+      <MapContainer center={position} zoom={zoom} scrollWheelZoom={false}>
+        <TileLayer
+          url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+          attribution="Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap"
+        />
+        <Marker position={position}>
+          <Tooltip>
+            A pretty CSS3 popup. <br /> Easily customizable.
+          </Tooltip>
+        </Marker>
+        <Polygon
+          positions={[
+            [46.6514, -122.2543], // Northwestern point
+            [46.2756, -122.1434],
+            [46.1667, -121.9882],
+            [46.1375, -121.7316],
+            [45.9931, -121.5158],
+            [45.9147, -121.7371], // Southern boundary
+            [45.9039, -121.8951],
+            [45.9039, -122.0531],
+            [46.0483, -122.2708],
+            [46.2864, -122.3872], // Western edge
+            [46.6514, -122.2543], // Back to start
+          ]}
+          pathOptions={{
+            color: "purple",
+            fillColor: "purple",
+            fillOpacity: 0.3,
+            weight: 2,
+          }}
+        >
+          <Tooltip>Gifford Pinchot National Forest</Tooltip>
+        </Polygon>
+      </MapContainer>
     </div>
   );
 }
-
-export default MapboxMap;

@@ -1,3 +1,6 @@
+// import "mapbox-gl/dist/mapbox-gl.css";
+import "leaflet/dist/leaflet.css";
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "~/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
